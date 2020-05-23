@@ -35,12 +35,15 @@ public class BTree<T extends Comparable<T>> {
 
     //Task 2.1
     public boolean insert(T value) {
+        return insertFromNode(root, value);
+    }
+
+    public boolean insertFromNode(Node<T> node, T value) {
         // TODO: implement your code here
-        if (root == null) {
+        if (node == null) {
             root = new Node<>(null, maxKeySize, maxChildrenSize);
             root.addKey(value);
         } else {
-            Node<T> node = root;
             // TODO: Check this node!= null
             while (node != null && (node.numberOfKeys() == maxKeySize | node.numberOfChildren() > 0)) {
                 // check if split is needed
@@ -59,11 +62,18 @@ public class BTree<T extends Comparable<T>> {
             node.addKey(value);
 
         }
+
+        size++;
+
         return true;
     }
 
     public T delete(T value) {
-        return deleteFromNode(root, value);
+        T deleted = deleteFromNode(root, value);
+        if (deleted != null) {
+            size--;
+        }
+        return deleted;
     }
 
     private T deleteFromNode(Node<T> node, T value) {
@@ -144,7 +154,20 @@ public class BTree<T extends Comparable<T>> {
     //Task 2.2
     public boolean insert2pass(T value) {
         // TODO: implement your code here
-        return false;
+        Node<T> w = root;
+        Node<T> pos = root;
+        if (root != null) {
+            while (pos.numberOfChildren() != 0) {
+                if (pos.numberOfKeys() < maxKeySize)
+                    w = pos;
+                int i = 0;
+                while (i < pos.numberOfKeys() && pos.getKey(i).compareTo(value) < 0) {
+                    i++;
+                }
+                pos = pos.getChild(i);
+            }
+        }
+        return insertFromNode(w, value);
     }
 
     /**
