@@ -34,17 +34,17 @@ public class BTree<T extends Comparable<T>> {
 
 
     //Task 2.1
+    // call insert from node with root value
     public boolean insert(T value) {
         return insertFromNode(root, value);
     }
 
+    // this method gets a node from which it needs to start 1-pass insert and a value to insert
     public boolean insertFromNode(Node<T> node, T value) {
-        // TODO: implement your code here
         if (node == null) {
             root = new Node<>(null, maxKeySize, maxChildrenSize);
             root.addKey(value);
         } else {
-            // TODO: Check this node!= null
             while (node != null && (node.numberOfKeys() == maxKeySize | node.numberOfChildren() > 0)) {
                 // check if split is needed
                 if (node.numberOfKeys() == maxKeySize) {
@@ -60,9 +60,7 @@ public class BTree<T extends Comparable<T>> {
                 node = node.getChild(i);
             }
             node.addKey(value);
-
         }
-
         size++;
 
         return true;
@@ -76,14 +74,14 @@ public class BTree<T extends Comparable<T>> {
         return deleted;
     }
 
+    // this method gets a node from which it needs to start the deletion proccess and a value to delete
     private T deleteFromNode(Node<T> node, T value) {
-        // TODO: implement your code here
         T deleted = null;
         while (node != null) {
             if (node != root && node.numberOfKeys() == minKeySize) {
                 this.combined(node);
             }
-
+            // search for the key in the array of keys
             int i = 0;
             while (i < node.numberOfKeys() && node.getKey(i).compareTo(value) < 0) {
                 i++;
@@ -93,24 +91,28 @@ public class BTree<T extends Comparable<T>> {
                 deleted = deleteValue(node, i);
                 break;
             } else {
-                //else continue searching
+                // else continue searching
                 node = node.getChild(i);
             }
         }
         return deleted;
     }
 
+    // deleting the value from the specific node
+    // will be called after searched for the value in the ndoe
     private T deleteValue(Node<T> node, int index) {
         T key = node.getKey(index);
         // case node is a leaf
+        // we can remove the value safely
         if (node.numberOfChildren() == 0) {
             node.removeKey(index);
             return key;
         } else {
-            // inner node
-            // first check if left child has more than minimum keys
+            // inner node\
             Node<T> leftChild = node.getChild(index);
             Node<T> rightChild = node.getChild(index + 1);
+            // first check if left child has more than minimum keys
+            // if so, find the predecessor of the kry in the left inner node
             if (leftChild.numberOfKeys() > minKeySize) {
                 Node<T> pos = leftChild;
                 while (pos.numberOfChildren() != 0)
@@ -118,6 +120,7 @@ public class BTree<T extends Comparable<T>> {
                 T predecessor = pos.getKey(pos.numberOfKeys() - 1);
                 deleteFromNode(leftChild, predecessor);
 
+                // after deleting the predecessor, replace it with the value of the key we want to delete
                 node.removeKey(index);
                 node.addKey(predecessor);
                 return key;
@@ -153,7 +156,6 @@ public class BTree<T extends Comparable<T>> {
 
     //Task 2.2
     public boolean insert2pass(T value) {
-        // TODO: implement your code here
         Node<T> w = root;
         Node<T> pos = root;
         if (root != null) {
@@ -469,9 +471,6 @@ public class BTree<T extends Comparable<T>> {
 
             if (rightNeighbor != null && rightNeighborSize > minKeySize) {
                 // Try to borrow from right neighbor
-                T removeValue = rightNeighbor.getKey(0);
-                // int prev = getIndexOfPreviousValue(parent, removeValue);
-                // TODO: check if index is right
                 // for every child of index i, the key between the child and the right neighbor is at index i
                 int prev = index;
                 T parentValue = parent.removeKey(prev);
@@ -508,8 +507,6 @@ public class BTree<T extends Comparable<T>> {
                 }
             } else if (rightNeighbor != null && parent.numberOfKeys() > 0) {
                 // Can't borrow from neighbors, try to combined with right neighbor
-                T removeValue = rightNeighbor.getKey(0);
-//                int prev =
                 int prev = index;
                 T parentValue = parent.removeKey(prev);
                 parent.removeChild(rightNeighbor);
