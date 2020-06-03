@@ -447,9 +447,6 @@ public class BTree<T extends Comparable<T>> {
         }
 
         if (leftNeighbor != null && leftNeighborSize > minKeySize) {
-            // Try to borrow from left neighbor
-            T removeValue = leftNeighbor.getKey(leftNeighbor.numberOfKeys() - 1);
-//                int prev = getIndexOfNextValue(parent, removeValue);
             // for every child of index i, the key placed between the child and its' left neighbor is at i-1
             int prev = index - 1;
             T parentValue = parent.removeKey(prev);
@@ -460,7 +457,7 @@ public class BTree<T extends Comparable<T>> {
                 node.addChild(leftNeighbor.removeChild(leftNeighbor.numberOfChildren() - 1));
             }
         } else {
-            // Cant borrow from left neighbor, Try to borrow neighbor
+            // Cant borrow from left neighbor, Try to borrow from right neighbor
             Node<T> rightNeighbor = null;
             int rightNeighborSize = -minChildrenSize;
             if (indexOfRightNeighbor < parent.numberOfChildren()) {
@@ -470,7 +467,6 @@ public class BTree<T extends Comparable<T>> {
 
 
             if (rightNeighbor != null && rightNeighborSize > minKeySize) {
-                // Try to borrow from right neighbor
                 // for every child of index i, the key between the child and the right neighbor is at index i
                 int prev = index;
                 T parentValue = parent.removeKey(prev);
@@ -481,7 +477,7 @@ public class BTree<T extends Comparable<T>> {
                     node.addChild(rightNeighbor.removeChild(0));
                 }
             } else if (leftNeighbor != null && parent.numberOfKeys() > 0) {
-                // Can't borrow from neighbors, try to combined with left neighbor
+                // Can't borrow from neighbors, try to combine with left neighbor
                 T removeValue = leftNeighbor.getKey(leftNeighbor.numberOfKeys() - 1);
                 int prev = getIndexOfNextValue(parent, removeValue);
                 T parentValue = parent.removeKey(prev);
@@ -506,7 +502,7 @@ public class BTree<T extends Comparable<T>> {
                     root = node;
                 }
             } else if (rightNeighbor != null && parent.numberOfKeys() > 0) {
-                // Can't borrow from neighbors, try to combined with right neighbor
+                // Can't combine with left neighbor, try to combine with right neighbor
                 int prev = index;
                 T parentValue = parent.removeKey(prev);
                 parent.removeChild(rightNeighbor);
@@ -681,7 +677,17 @@ public class BTree<T extends Comparable<T>> {
         private int childrenSize = 0;
         private Comparator<Node<T>> comparator = new Comparator<Node<T>>() {
             public int compare(Node<T> arg0, Node<T> arg1) {
-                return arg0.getKey(0).compareTo(arg1.getKey(0));
+                // changed comparator to support reoccurs in nodes
+                // if the minimal key of each node are equals, then check the maximal
+                int diff =  arg0.getKey(0).compareTo(arg1.getKey(0));
+                if (diff != 0){
+                    return diff;
+                }
+                else
+                {
+                    return arg0.getKey(arg0.numberOfKeys()-1).
+                            compareTo(arg1.getKey(arg1.numberOfKeys()-1));
+                }
             }
         };
 
